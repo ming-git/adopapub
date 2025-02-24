@@ -1,44 +1,23 @@
-# name: Deploy to Tencent Server
-#
-# on:
-#   push:
-#     branches: [ main ]
-#     paths:
-#       - '**'           # 监控所有文件
-#       - '!.*'          # 忽略以 . 开头的文件和目录
-#       - '!**/.*/**'    # 忽略以 . 开头的子目录
-#
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-#
-#     steps:
-#       # 步骤 1：检出代码
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
-#
-#       # 步骤 2：过滤文件（忽略以 . 开头的文件和目录）
-#       - name: Filter Files
-#         run: |
-#           # 删除以 . 开头的文件和目录（排除当前目录和上级目录）
-#           find . -name ".*" ! -path "." ! -path ".." -exec rm -rf {} +
-#           find . -path "*/.*" ! -path "." ! -path ".." -exec rm -rf {} +
-#           # 打印剩余文件
-#           ls -R
-#
-#       # 步骤 3：部署到服务器
-#       - name: Deploy to Server
-#         env:
-#           SSH_PRIVATE_KEY: ${{ secrets.TCLH_SSH_PRIVATE_KEY }}  # 服务器的 SSH 私钥
-#           SERVER_IP: ${{ secrets.TCLH_SERVER_IP }}             # 服务器 IP 地址
-#           SERVER_USER: ${{ secrets.TCLH_SERVER_USER }}         # 服务器用户名
-#           SERVER_PATH: ${{ secrets.TCLH_SERVER_PATH }}         # 服务器部署路径
-#         run: |
-#           # 配置 SSH
-#           mkdir -p ~/.ssh
-#           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-#           chmod 600 ~/.ssh/id_rsa
-#           ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
-#
-#           # 将文件同步到服务器
-#           rsync -avz ./ $SERVER_USER@$SERVER_IP:$SERVER_PATH
+name: Deploy to Server TENCENT LIGHTHOUSE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.TCLH_SSH_KEY }}
+
+      - name: Sync www directory to Server B
+        run: |
+          rsync -avz --delete www/ ${{ secrets.TCLH_SERVER_USER }}@${{ secrets.TCLH_SERVER_IP }}:${{ secrets.TCLH_SERVER_PATH }}
