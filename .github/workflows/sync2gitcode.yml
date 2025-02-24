@@ -1,0 +1,38 @@
+name: Sync to GitCode
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**'           # 监控所有文件
+      - '!.*'          # 忽略以 . 开头的文件和目录
+      - '!**/.*/**'    # 忽略以 . 开头的子目录
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # 提取完整历史
+
+    - name: Configure SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_ACTION_GITHUB2GITCODE_ED25519 }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan gitcode.com >> ~/.ssh/known_hosts
+
+    - name: Prepare Code for Sync
+      run: |
+        # 删除 .github 目录
+        rm -rf .github
+        rm -rf .gitignore
+
+    - name: Push to GitCode
+      run: |
+        git remote add gitcode git@gitcode.com:adopa/adopablog.git
+        git push --force gitcode main
