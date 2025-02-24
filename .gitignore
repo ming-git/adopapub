@@ -3,6 +3,7 @@
 docker/
 nginx/
 ssl/
+devops/
 
 # 忽略所有 nginx_*.conf 文件
 **/nginx_*.conf
