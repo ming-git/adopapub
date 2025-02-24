@@ -26,9 +26,6 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          # 移除 static_site_generator 设置
-          # static_site_generator: "custom"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
